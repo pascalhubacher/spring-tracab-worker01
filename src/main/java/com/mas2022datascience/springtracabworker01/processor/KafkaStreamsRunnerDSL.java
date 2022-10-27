@@ -1,7 +1,9 @@
 package com.mas2022datascience.springtracabworker01.processor;
 
 import com.mas2022datascience.avro.v1.Frame;
+import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,12 +40,18 @@ public class KafkaStreamsRunnerDSL {
 //    StreamsBuilder builder = new StreamsBuilder();
 //    KStream<Foo, Bar> textLines = builder.stream("my-avro-topic", Consumed.with(keySpecificAvroSerde, valueSpecificAvroSerde));
 //
-//
     KStream<String, Frame> stream = kStreamBuilder.stream(topicIn);
-//    stream.foreach(
-//        (key, value) -> {
-//          System.out.println("(From DSL) " + value.getUtc());
-//        });
+
+
+
+    stream.foreach(
+        (key, value) -> {
+          System.out.println("(From DSL) " + value.getUtc());
+        });
+
+    // publish to the output topic
+    //KStream<Void, String> upperStream = stream.mapValues(value -> value.toUpperCase());
+    //upperStream.to(topicOut);
 
     return stream;
 
