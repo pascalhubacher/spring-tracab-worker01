@@ -16,6 +16,7 @@
 	<properties>
 		<java.version>17</java.version>
 		<avro.version>1.11.0</avro.version>
+		<avroavdl.version>0.0.1-SNAPSHOT</avroavdl.version>
 		<confluent.version>7.2.0</confluent.version>
 		<avro-maven-plugin.version>1.11.0</avro-maven-plugin.version>
 	</properties>
@@ -53,6 +54,13 @@
 			<artifactId>spring-kafka-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>com.mas2022datascience</groupId>
+			<artifactId>avroavdl</artifactId>
+			<version>${avroavdl.version}</version>
+		</dependency>
+
 	</dependencies>
 
 	<repositories>
@@ -69,27 +77,6 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${project.parent.version}</version>
-			</plugin>
-			<!-- other maven plugins in the project -->
-			<plugin>
-				<groupId>org.apache.avro</groupId>
-				<artifactId>avro-maven-plugin</artifactId>
-				<version>${avro-maven-plugin.version}</version>
-				<executions>
-					<execution>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>schema</goal>
-							<goal>protocol</goal>
-							<goal>idl-protocol</goal>
-						</goals>
-						<configuration>
-							<sourceDirectory>src/main/avro</sourceDirectory>
-							<outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
-							<stringType>String</stringType>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 		</plugins>
 	</build>
