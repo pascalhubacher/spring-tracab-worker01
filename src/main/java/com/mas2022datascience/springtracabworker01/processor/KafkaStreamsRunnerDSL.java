@@ -1,9 +1,7 @@
 package com.mas2022datascience.springtracabworker01.processor;
 
 import com.mas2022datascience.avro.v1.Frame;
-import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,39 +20,35 @@ public class KafkaStreamsRunnerDSL {
   @Bean
   public KStream<String, Frame> kStream(StreamsBuilder kStreamBuilder) {
 
-//    // When configuring the default serdes of StreamConfig
-//    final Properties streamsConfiguration = new Properties();
-//    streamsConfiguration.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
-//    streamsConfiguration.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
-//    streamsConfiguration.put("schema.registry.url", "http://my-schema-registry:8081");
-//
-//// When you want to override serdes explicitly/selectively
-//    final Map<String, String> serdeConfig = Collections.singletonMap("schema.registry.url",
-//        "http://my-schema-registry:8081");
-//// `Foo` and `Bar` are Java classes generated from Avro schemas
-//    final Serde<Foo> keySpecificAvroSerde = new SpecificAvroSerde<>();
-//    keySpecificAvroSerde.configure(serdeConfig, true); // `true` for record keys
-//    final Serde<Bar> valueSpecificAvroSerde = new SpecificAvroSerde<>();
-//    valueSpecificAvroSerde.configure(serdeConfig, false); // `false` for record values
-//
-//    StreamsBuilder builder = new StreamsBuilder();
-//    KStream<Foo, Bar> textLines = builder.stream("my-avro-topic", Consumed.with(keySpecificAvroSerde, valueSpecificAvroSerde));
-//
     KStream<String, Frame> stream = kStreamBuilder.stream(topicIn);
 
+//    KTable<String, Frame> frame = stream.toTable(Materialized.as("test"));
+
+//    InMemoryKeyValueStore<String, Object> keyValueStore =
+//        streams.store("CountsKeyValueStore", QueryableStoreTypes.keyValueStore());
+
+//    KTable<String, Arrays<Integer>> objects = stream.
+
+//  <Frame utc="2019-06-05T18:47:25.843" isBallInPlay="1" ballPossession="Away">
+//    <Objs>
+//      <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
+//      <Obj type="1" id="97746" x="4847" y="630" sampling="0" />
+//      <Obj type="1" id="250079677" x="1439" y="2441" sampling="0" />
+//  key: id
+//  value: [x, y, z]
 
 
-    stream.foreach(
-        (key, value) -> {
-          System.out.println("(From DSL) " + value.getUtc());
-        });
-
+    stream.mapValues(valueFrame ->
+            singletonList.getInstance().getVelocity(valueFrame))
+        .to(topicOut);
     // publish to the output topic
+//    KStream<String, Frame> velocityStream = stream.
     //KStream<Void, String> upperStream = stream.mapValues(value -> value.toUpperCase());
     //upperStream.to(topicOut);
 
     return stream;
 
   }
-
 }
+
+
