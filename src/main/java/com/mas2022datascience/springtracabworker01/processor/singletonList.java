@@ -119,7 +119,7 @@ public class singletonList {
     int timeUnitDivisor = 1000;
 
     if (timeDifference == 0) {
-      return Optional.of(null);
+      return Optional.empty();
     } else {
       return Optional.of((distanceDifference / distanceUnitDivisor) / (timeDifference / timeUnitDivisor));
     }
@@ -143,7 +143,7 @@ public class singletonList {
     int timeUnitDivisor = 1000;
 
     if (oldObject.getVelocity() == null || actualObject.getVelocity() == null || timeDifference == 0 ) {
-      return null;
+      return Optional.empty();
     } else {
       Double velocityDifference = actualObject.getVelocity() - oldObject.getVelocity();
       return Optional.of(velocityDifference / (timeDifference / timeUnitDivisor));
