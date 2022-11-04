@@ -17,7 +17,7 @@ public class singletonList {
 
   private static singletonList instance;
 
-  final private ArrayList<Frame> historyList = new ArrayList<Frame>();
+  final private ArrayList<Frame> historyList = new ArrayList<>();
 
   private singletonList() {
     // private constructor
@@ -49,7 +49,7 @@ public class singletonList {
     );
 
     // update velocity and acceleration to actual object
-    actualObjects.stream().forEach( actualObject -> {
+    actualObjects.forEach( actualObject -> {
       if (oldObjectsMap.containsKey(actualObject.getId())) {
         actualObject.setVelocity(calcVelocity(actualObject,
             actualFrame.getUtc(),
@@ -107,11 +107,11 @@ public class singletonList {
    * @param oldObject of type Object
    * <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
    * @param oldUtc UTC time as a String
-   * @return
+   * @return Optional velocity or empty
    */
   private Optional<Double> calcVelocity(Object actualObject, String actualUtc, Object oldObject, String oldUtc) {
-    Double timeDifference = getTimeDifference(actualUtc, oldUtc);
-    Double distanceDifference = getEuclidianDistance(actualObject, oldObject);
+    double timeDifference = getTimeDifference(actualUtc, oldUtc);
+    double distanceDifference = getEuclidianDistance(actualObject, oldObject);
 
     // represents the divisor that is needed to get m. Ex. cm to m means 100 as 100cm is 1m
     int distanceUnitDivisor = 100;
@@ -134,10 +134,10 @@ public class singletonList {
    * @param oldObject of type Object
    * <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
    * @param oldUtc UTC time as a String
-   * @return
+   * @return Optional acceleration or empty
    */
   private Optional<Double> calcAcceleration(Object actualObject, String actualUtc, Object oldObject, String oldUtc) {
-    Double timeDifference = getTimeDifference(actualUtc, oldUtc);
+    double timeDifference = getTimeDifference(actualUtc, oldUtc);
 
     // represents the divisor that is needed to get s. Ex. ms to s means 1000 as 1000ms is 1s
     int timeUnitDivisor = 1000;
@@ -145,14 +145,14 @@ public class singletonList {
     if (oldObject.getVelocity() == null || actualObject.getVelocity() == null || timeDifference == 0 ) {
       return Optional.empty();
     } else {
-      Double velocityDifference = actualObject.getVelocity() - oldObject.getVelocity();
+      double velocityDifference = actualObject.getVelocity() - oldObject.getVelocity();
       return Optional.of(velocityDifference / (timeDifference / timeUnitDivisor));
     }
   }
 
   /**
    * Convertes the utc string of type "yyyy-MM-dd'T'HH:mm:ss.SSS" to epoc time in milliseconds.
-   * @param utcString
+   * @param utcString of type String of format 'yyyy-MM-dd'T'HH:mm:ss.SSS'
    * @return epoc time in milliseconds
    */
   private static long utcString2epocMs(String utcString) {
