@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -53,11 +54,11 @@ public class singletonList {
         actualObject.setVelocity(calcVelocity(actualObject,
             actualFrame.getUtc(),
             oldObjectsMap.get(actualObject.getId()),
-            oldFrame.getUtc()));
+            oldFrame.getUtc()).orElse(null));
         actualObject.setAccelleration(calcAcceleration(actualObject,
             actualFrame.getUtc(),
             oldObjectsMap.get(actualObject.getId()),
-            oldFrame.getUtc()));
+            oldFrame.getUtc()).orElse(null));
       }
     });
 
@@ -108,7 +109,7 @@ public class singletonList {
    * @param oldUtc UTC time as a String
    * @return
    */
-  private double calcVelocity(Object actualObject, String actualUtc, Object oldObject, String oldUtc) {
+  private Optional<Double> calcVelocity(Object actualObject, String actualUtc, Object oldObject, String oldUtc) {
     Double timeDifference = getTimeDifference(actualUtc, oldUtc);
     Double distanceDifference = getEuclidianDistance(actualObject, oldObject);
 
@@ -118,9 +119,9 @@ public class singletonList {
     int timeUnitDivisor = 1000;
 
     if (timeDifference == 0) {
-      return -1.0;
+      return Optional.of(null);
     } else {
-      return (distanceDifference / distanceUnitDivisor) / (timeDifference / timeUnitDivisor);
+      return Optional.of((distanceDifference / distanceUnitDivisor) / (timeDifference / timeUnitDivisor));
     }
   }
 
@@ -135,17 +136,17 @@ public class singletonList {
    * @param oldUtc UTC time as a String
    * @return
    */
-  private double calcAcceleration(Object actualObject, String actualUtc, Object oldObject, String oldUtc) {
+  private Optional<Double> calcAcceleration(Object actualObject, String actualUtc, Object oldObject, String oldUtc) {
     Double timeDifference = getTimeDifference(actualUtc, oldUtc);
-    Double velocityDifference = actualObject.getVelocity() - oldObject.getVelocity();
 
     // represents the divisor that is needed to get s. Ex. ms to s means 1000 as 1000ms is 1s
     int timeUnitDivisor = 1000;
 
-    if (oldObject.getVelocity() == -1.0 || timeDifference == 0 ) {
-      return -1;
+    if (oldObject.getVelocity() == null || actualObject.getVelocity() == null || timeDifference == 0 ) {
+      return null;
     } else {
-      return velocityDifference / (timeDifference / timeUnitDivisor);
+      Double velocityDifference = actualObject.getVelocity() - oldObject.getVelocity();
+      return Optional.of(velocityDifference / (timeDifference / timeUnitDivisor));
     }
   }
 
