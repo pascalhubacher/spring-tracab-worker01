@@ -1,10 +1,10 @@
 topic:
   tracab-01:
-    name: tracab-01-raw
+    name: tracab-02-filter
     replication-factor: 2
     partitions: 3
   tracab-02:
-    name: tracab-02
+    name: tracab-03-enriched
     replication-factor: 2
     partitions: 3
 
