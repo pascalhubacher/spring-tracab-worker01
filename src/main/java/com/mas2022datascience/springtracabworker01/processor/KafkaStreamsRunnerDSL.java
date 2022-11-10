@@ -1,7 +1,11 @@
 package com.mas2022datascience.springtracabworker01.processor;
 
 import com.mas2022datascience.avro.v1.Frame;
+import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
+import org.apache.kafka.common.serialization.Serde;
+import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -20,15 +24,70 @@ public class KafkaStreamsRunnerDSL {
   @Bean
   public KStream<String, Frame> kStream(StreamsBuilder kStreamBuilder) {
 
-    KStream<String, Frame> stream = kStreamBuilder.stream(topicIn);
+//    final Serde<Object> objectSerde = new SpecificAvroSerde<>();
+    final Serde<Frame> frameSerde = new SpecificAvroSerde<>();
 
-    stream.mapValues(valueFrame ->
+    // the builder is used to construct the topology
+    StreamsBuilder builder = new StreamsBuilder();
+
+//    final StoreBuilder<KeyValueStore<String, Object>> myStateStore = Stores
+//        .keyValueStoreBuilder(Stores.persistentKeyValueStore("MyStateStore"),
+//            Serdes.String(), objectSerde)
+//        .withCachingEnabled();
+//    builder.addStateStore(myStateStore);
+//
+//    final MyStateHandler myStateHandler = new MyStateHandler(myStateStore.name());
+
+    KStream<String, Frame> stream = builder.stream(topicIn,
+        Consumed.with(Serdes.String(), frameSerde));
+
+    stream
+        .mapValues(valueFrame ->
             singletonList.getInstance().calculate(valueFrame))
         .to(topicOut);
+
+//    // invoke the transformer
+//    KStream<String, Frame> transformedStream = stream.transform(() -> myStateHandler, myStateStore.name());
+//
+//    // peek into the stream and execute a println
+//    //transformedStream.peek((k,v) -> System.out.println("key: " + k + " - value:" + v));
+//
+//    // publish result
+//    //transformedStream.to("test-kstream-output-topic");
 
     return stream;
 
   }
+
+//  private static final class MyStateHandler implements
+//      Transformer<String, Object, KeyValue<String, Object>> {
+//    final private String storeName;
+//    private KeyValueStore<String, Object> stateStore;
+//    private ProcessorContext context;
+//
+//    public MyStateHandler(final String storeName) {
+//      this.storeName = storeName;
+//    }
+//
+//    @Override
+//    public void init(ProcessorContext processorContext) {
+//      this.context = processorContext;
+//      stateStore = (KeyValueStore<String, Object>) this.context.getStateStore(storeName);
+//    }
+//
+//    @Override
+//    public KeyValue<String, Object> transform(String key, Object value) {
+//      stateStore.put(key, value);
+//      return new KeyValue<>(key, stateStore.get(key));
+//    }
+//
+//    @Override
+//    public void close() {
+//
+//    }
+//
+//  }
+
 }
 
 
