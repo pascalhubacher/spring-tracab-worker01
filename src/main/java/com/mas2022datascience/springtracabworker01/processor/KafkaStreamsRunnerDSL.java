@@ -27,8 +27,7 @@ public class KafkaStreamsRunnerDSL {
 //    final Serde<Object> objectSerde = new SpecificAvroSerde<>();
     final Serde<Frame> frameSerde = new SpecificAvroSerde<>();
 
-    // the builder is used to construct the topology
-    StreamsBuilder builder = new StreamsBuilder();
+    KStream<String, Frame> stream = kStreamBuilder.stream(topicIn);
 
 //    final StoreBuilder<KeyValueStore<String, Object>> myStateStore = Stores
 //        .keyValueStoreBuilder(Stores.persistentKeyValueStore("MyStateStore"),
@@ -37,9 +36,6 @@ public class KafkaStreamsRunnerDSL {
 //    builder.addStateStore(myStateStore);
 //
 //    final MyStateHandler myStateHandler = new MyStateHandler(myStateStore.name());
-
-    KStream<String, Frame> stream = builder.stream(topicIn,
-        Consumed.with(Serdes.String(), frameSerde));
 
     stream
         .mapValues(valueFrame ->
