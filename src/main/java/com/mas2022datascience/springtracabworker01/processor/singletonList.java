@@ -41,13 +41,12 @@ public class singletonList {
     }
 
     Frame oldFrame = historyList.get(historyList.size()-1);
-
-    List<Object> actualObjects = actualFrame.getObjects();
     HashMap<String, Object> oldObjectsMap = new HashMap<>();
     oldFrame.getObjects().forEach( object ->
         oldObjectsMap.put(object.getId(), object)
     );
 
+    List<Object> actualObjects = actualFrame.getObjects();
     // update velocity and acceleration to actual object
     actualObjects.forEach( actualObject -> {
       if (oldObjectsMap.containsKey(actualObject.getId())) {
