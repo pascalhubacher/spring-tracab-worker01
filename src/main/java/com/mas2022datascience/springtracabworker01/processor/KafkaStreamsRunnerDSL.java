@@ -50,8 +50,7 @@ public class KafkaStreamsRunnerDSL {
 
     final StoreBuilder<KeyValueStore<String, Frame>> myStateStore = Stores
         .keyValueStoreBuilder(Stores.persistentKeyValueStore("MyStateStore"),
-            Serdes.String(), frameSerde)
-        .withCachingEnabled();
+            Serdes.String(), frameSerde);
     kStreamBuilder.addStateStore(myStateStore);
 
     final MyStateHandler myStateHandler = new MyStateHandler(myStateStore.name());
@@ -82,14 +81,14 @@ public class KafkaStreamsRunnerDSL {
     @Override
     public void init(ProcessorContext processorContext) {
       this.context = processorContext;
-      stateStore = this.context.getStateStore(storeName);
+      stateStore = (KeyValueStore<String, Frame>) this.context.getStateStore(storeName);
     }
 
     @Override
     public KeyValue<String, Frame> transform(String key, Frame value) {
       if (stateStore.get(key) == null) {
         stateStore.put(key, value);
-        return new KeyValue<>(key, value);
+        return new KeyValue<>(key, stateStore.get(key));
       }
       Frame oldFrame = stateStore.get(key);
       HashMap<String, Object> oldObjectsMap = new HashMap<>();
