@@ -72,7 +72,6 @@ public class KafkaStreamsRunnerDSL {
       Transformer<String, Frame, KeyValue<String, Frame>> {
     final private String storeName;
     private KeyValueStore<String, Frame> stateStore;
-    private ProcessorContext context;
 
     public MyStateHandler(final String storeName) {
       this.storeName = storeName;
@@ -80,8 +79,7 @@ public class KafkaStreamsRunnerDSL {
 
     @Override
     public void init(ProcessorContext processorContext) {
-      this.context = processorContext;
-      stateStore = (KeyValueStore<String, Frame>) this.context.getStateStore(storeName);
+      stateStore = processorContext.getStateStore(storeName);
     }
 
     @Override
@@ -199,7 +197,7 @@ public class KafkaStreamsRunnerDSL {
   }
 
   /**
-   * Convertes the utc string of type "yyyy-MM-dd'T'HH:mm:ss.SSS" to epoc time in milliseconds.
+   * Converts the utc string of type "yyyy-MM-dd'T'HH:mm:ss.SSS" to epoc time in milliseconds.
    * @param utcString of type String of format 'yyyy-MM-dd'T'HH:mm:ss.SSS'
    * @return epoc time in milliseconds
    */
