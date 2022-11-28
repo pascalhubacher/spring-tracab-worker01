@@ -72,7 +72,6 @@ public class KafkaStreamsRunnerDSL {
       Transformer<String, Frame, KeyValue<String, Frame>> {
     final private String storeName;
     private KeyValueStore<String, Frame> stateStore;
-    private ProcessorContext context;
 
     public MyStateHandler(final String storeName) {
       this.storeName = storeName;
@@ -80,8 +79,7 @@ public class KafkaStreamsRunnerDSL {
 
     @Override
     public void init(ProcessorContext processorContext) {
-      this.context = processorContext;
-      stateStore = (KeyValueStore<String, Frame>) this.context.getStateStore(storeName);
+      stateStore = processorContext.getStateStore(storeName);
     }
 
     @Override
