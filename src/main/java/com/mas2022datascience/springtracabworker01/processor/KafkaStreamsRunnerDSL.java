@@ -72,6 +72,7 @@ public class KafkaStreamsRunnerDSL {
       Transformer<String, Frame, KeyValue<String, Frame>> {
     final private String storeName;
     private KeyValueStore<String, Frame> stateStore;
+    private ProcessorContext context;
 
     public MyStateHandler(final String storeName) {
       this.storeName = storeName;
@@ -79,15 +80,26 @@ public class KafkaStreamsRunnerDSL {
 
     @Override
     public void init(ProcessorContext processorContext) {
-      stateStore = processorContext.getStateStore(storeName);
+      this.context = processorContext;
+      stateStore = (KeyValueStore<String, Frame>) this.context.getStateStore(storeName);
     }
 
     @Override
     public KeyValue<String, Frame> transform(String key, Frame value) {
-      if (stateStore.get(key) == null) {
+      try {
+        if (stateStore.get(key) == null) {
+          stateStore.put(key, value);
+          return new KeyValue<>(key, stateStore.get(key));
+        }
+      } catch (org.apache.kafka.common.errors.SerializationException ex) {
+        // the first time the state store is empty, so we get a serialization exception
         stateStore.put(key, value);
         return new KeyValue<>(key, stateStore.get(key));
+      } catch (Exception e) {
+        e.printStackTrace();
+        return null;
       }
+
       Frame oldFrame = stateStore.get(key);
       HashMap<String, Object> oldObjectsMap = new HashMap<>();
       oldFrame.getObjects().forEach( object ->
@@ -111,6 +123,7 @@ public class KafkaStreamsRunnerDSL {
 
       stateStore.put(key, value);
       return new KeyValue<>(key, stateStore.get(key));
+
     }
 
     @Override
