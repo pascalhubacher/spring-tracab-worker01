@@ -116,6 +116,8 @@ public class KafkaStreamsRunnerDSL {
               value.getUtc(),
               oldObjectsMap.get(actualObject.getId()),
               oldFrame.getUtc()).orElse(null));
+          actualObject.setDistance(getEuclidianDistance(actualObject,
+              oldObjectsMap.get(actualObject.getId())).orElse(null));
         }
       });
 
@@ -130,16 +132,20 @@ public class KafkaStreamsRunnerDSL {
 
   /**
    * calculates the euclidian distance between two points in a 3 dimensional space
-   * @param actualObject of type Object
-   * <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
-   * @param oldObject of type Object
-   * <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
-   * @return distance between 2 points in a 3 dimensional space
+   *
+   * @param actualObject  of type Object
+   *                      <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
+   * @param oldObject     of type Object
+   *                      <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
+   * @return distance     of type double
+   *                      between 2 points in a 3 dimensional space
    */
-  private static double getEuclidianDistance(Object actualObject, Object oldObject) {
-    return Math.sqrt(
-        Math.pow(oldObject.getX()-actualObject.getX(), 2) + Math.pow(oldObject.getY()-actualObject.getY(), 2)
+  private static Optional<Double> getEuclidianDistance(Object actualObject, Object oldObject) {
+    return Optional.of(
+        Math.sqrt(
+          Math.pow(oldObject.getX()-actualObject.getX(), 2) + Math.pow(oldObject.getY()-actualObject.getY(), 2)
             + Math.pow(oldObject.getZ()-actualObject.getZ(), 2)
+        )
     );
   }
 
@@ -167,17 +173,22 @@ public class KafkaStreamsRunnerDSL {
   private static Optional<Double> calcVelocity(Object actualObject, String actualUtc,
       Object oldObject, String oldUtc) {
     double timeDifference = getTimeDifference(actualUtc, oldUtc);
-    double distanceDifference = getEuclidianDistance(actualObject, oldObject);
+    Optional<Double> distanceDifference = getEuclidianDistance(actualObject, oldObject);
 
     // represents the divisor that is needed to get m. Ex. cm to m means 100 as 100cm is 1m
     int distanceUnitDivisor = 100;
     // represents the divisor that is needed to get s. Ex. ms to s means 1000 as 1000ms is 1s
     int timeUnitDivisor = 1000;
 
-    if (timeDifference == 0) {
-      return Optional.empty();
+    if (distanceDifference.isPresent()) {
+      if (timeDifference == 0) {
+        return Optional.empty();
+      } else {
+        return Optional.of((distanceDifference.get() / distanceUnitDivisor)
+            / (timeDifference / timeUnitDivisor));
+      }
     } else {
-      return Optional.of((distanceDifference / distanceUnitDivisor) / (timeDifference / timeUnitDivisor));
+      return Optional.empty();
     }
   }
 
