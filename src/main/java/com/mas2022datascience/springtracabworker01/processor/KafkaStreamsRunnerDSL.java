@@ -131,32 +131,36 @@ public class KafkaStreamsRunnerDSL {
   }
 
   /**
-   * calculates the euclidian distance between two points in a 3 dimensional space
+   * calculates the euclidian distance [m] between two points in a 3 dimensional space
    *
    * @param actualObject  of type Object
    *                      <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
    * @param oldObject     of type Object
    *                      <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
-   * @return distance     of type double
+   * @return distance     of type double in meters
    *                      between 2 points in a 3 dimensional space
    */
   private static Optional<Double> getEuclidianDistance(Object actualObject, Object oldObject) {
+    // represents the divisor that is needed to get m. Ex. cm to m means 100 as 100cm is 1m
+    int distanceUnitDivisor = 100;
     return Optional.of(
         Math.sqrt(
           Math.pow(oldObject.getX()-actualObject.getX(), 2) + Math.pow(oldObject.getY()-actualObject.getY(), 2)
             + Math.pow(oldObject.getZ()-actualObject.getZ(), 2)
-        )
+        ) / distanceUnitDivisor
     );
   }
 
   /**
-   * calculates the time difference in microseconds
+   * calculates the time difference in seconds
    * @param actualUtc UTC time as a String
    * @param oldUtc UTC time as a String
-   * @return time difference in microseconds
+   * @return time difference in seconds
    */
   private static double getTimeDifference(String actualUtc, String oldUtc) {
-    return utcString2epocMs(actualUtc) - utcString2epocMs(oldUtc);
+    // represents the divisor that is needed to get s. Ex. ms to s means 1000 as 1000ms is 1s
+    int timeUnitDivisor = 1000;
+    return (utcString2epocMs(actualUtc) - utcString2epocMs(oldUtc))/timeUnitDivisor;
   }
 
   /**
@@ -168,24 +172,18 @@ public class KafkaStreamsRunnerDSL {
    * @param oldObject of type Object
    * <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
    * @param oldUtc UTC time as a String
-   * @return Optional velocity or empty
+   * @return Optional velocity [m/s] or empty
    */
   private static Optional<Double> calcVelocity(Object actualObject, String actualUtc,
       Object oldObject, String oldUtc) {
     double timeDifference = getTimeDifference(actualUtc, oldUtc);
     Optional<Double> distanceDifference = getEuclidianDistance(actualObject, oldObject);
 
-    // represents the divisor that is needed to get m. Ex. cm to m means 100 as 100cm is 1m
-    int distanceUnitDivisor = 100;
-    // represents the divisor that is needed to get s. Ex. ms to s means 1000 as 1000ms is 1s
-    int timeUnitDivisor = 1000;
-
     if (distanceDifference.isPresent()) {
       if (timeDifference == 0) {
         return Optional.empty();
       } else {
-        return Optional.of((distanceDifference.get() / distanceUnitDivisor)
-            / (timeDifference / timeUnitDivisor));
+        return Optional.of(distanceDifference.get() / timeDifference);
       }
     } else {
       return Optional.empty();
@@ -194,27 +192,24 @@ public class KafkaStreamsRunnerDSL {
 
   /**
    * calculates the acceleration between to points
-   * math: acceleration = delta velocity [m/s]/ delta time [s] (linear acceleration)
+   * math: acceleration [m/s^2] = delta velocity [m/s]/ delta time [s] (linear acceleration)
    * @param actualObject of type Object
    * <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
    * @param actualUtc UTC time as a String
    * @param oldObject of type Object
    * <Obj type="7" id="0" x="4111" y="2942" z="11" sampling="0" />
    * @param oldUtc UTC time as a String
-   * @return Optional acceleration or empty
+   * @return Optional acceleration [m/s^2] or empty
    */
   private static Optional<Double> calcAcceleration(Object actualObject, String actualUtc,
       Object oldObject, String oldUtc) {
     double timeDifference = getTimeDifference(actualUtc, oldUtc);
 
-    // represents the divisor that is needed to get s. Ex. ms to s means 1000 as 1000ms is 1s
-    int timeUnitDivisor = 1000;
-
     if (oldObject.getVelocity() == null || actualObject.getVelocity() == null || timeDifference == 0 ) {
       return Optional.empty();
     } else {
       double velocityDifference = actualObject.getVelocity() - oldObject.getVelocity();
-      return Optional.of(velocityDifference / (timeDifference / timeUnitDivisor));
+      return Optional.of(velocityDifference / timeDifference);
     }
   }
 
@@ -223,7 +218,7 @@ public class KafkaStreamsRunnerDSL {
    * @param utcString of type String of format 'yyyy-MM-dd'T'HH:mm:ss.SSS'
    * @return epoc time in milliseconds
    */
-  private static long utcString2epocMs(String utcString) {
+  private static double utcString2epocMs(String utcString) {
     DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
         .withZone(ZoneOffset.UTC);
 
